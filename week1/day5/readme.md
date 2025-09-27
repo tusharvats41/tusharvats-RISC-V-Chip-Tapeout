@@ -110,7 +110,7 @@ gui_start
 
 ---
 
-### Optional: **Images/**  
+
 You can add images for controllability, observability, and scan chains as referenced in your notes. Name them:
 - `Controllability.png`
 - `Observability.png`
