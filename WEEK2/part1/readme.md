@@ -52,7 +52,7 @@ Designing and verifying a full-fledged industrial SoC is extremely complex. Baby
 
 ---
 Role of Functional Modelling
-Before diving into **RTL (Register Transfer Level)** design or **physical implementation**, it is essential to verify the **functionality** of the SoC. This is where functional modelling comes in.  
+Before diving into **RTL (Register Transfer Level)** design or **physical implementation**, it is essential to verify the **functionality** of the SoC. This is where functional modelling comes in.  ![SoC Diagram](photos/babysoc)
 
 ### Why is it important?
 - Detects **logical errors** early, before they propagate into later stages.  
@@ -65,8 +65,56 @@ Before diving into **RTL (Register Transfer Level)** design or **physical implem
 - **GTKWave** is used to analyze the generated waveform (`.vcd`) files.  
 - By simulating BabySoC, we can trace signals, check data flow, and ensure expected behavior.
 
+Phase-Locked Loop (PLL)
+
+The Phase-Locked Loop (PLL) is one of the most important blocks in VSDBabySoC. Its job is to generate a clean, stable clock signal that keeps the CPU and DAC perfectly synchronized. Without a PLL, the entire chip would run into timing mismatches.
+
+How it works (step by step):
+
+Reference Input – The PLL receives an external clock (usually low-frequency and noisy).
+Phase Detector (PD) – Compares the phase of the input clock with the PLL’s own oscillator output.
+Loop Filter (LF) – Smooths the phase error signal into a clean control voltage.
+Voltage Controlled Oscillator (VCO) – Adjusts frequency based on the control voltage.
+Divider (optional) – Helps multiply or divide the frequency for specific needs.
+
+Why PLL is needed in SoCs:
+
+Off-chip clocks may be noisy or unstable → PLL cleans them up.
+Different blocks of the chip may need different frequencies (e.g., CPU at 100 MHz, DAC at 50 MHz).
+External crystals suffer from tolerance errors, temperature drift, and aging. The PLL compensates for these variations.
+ In BabySoC, the PLL ensures the RVMYTH CPU and DAC always run in sync, avoiding glitches in audio/video output.
+![SoC Diagram](photos/pll)
+
+
+
+ Digital-to-Analog Converter (DAC)
+
+The Digital-to-Analog Converter (DAC) bridges the digital and analog worlds. While the CPU and memory deal with binary 0s and 1s, the real world (sound, images, voltages) is continuous. The DAC makes this conversion possible.
+
+Key Points about DAC:
+
+Input: Digital binary number (e.g., 1010110010 from the CPU’s r17 register).
+Output: Continuous analog voltage (proportional to the binary value).
+Resolution: A 10-bit DAC (used in BabySoC) can represent 1024 voltage levels.
+
+Types of DACs:
+
+Weighted Resistor DAC – Simple but impractical for higher bit counts (needs precise resistors).
+R-2R Ladder DAC – Most common; uses only two resistor values (R and 2R), scalable and accurate.
+Role in BabySoC:
+The RVMYTH CPU continuously updates register r17 with digital values.
+These values are fed into the DAC, which converts them to analog signals.
+The analog signal is stored in the OUT file or sent directly to external devices like:
+Speakers (for sound).
+Displays (for video).
+Other analog hardware.
+This makes BabySoC not just a “digital-only” chip, but a true mixed-signal SoC, since it interacts with real-world analog devices.
+![SoC Diagram](photos/dac)
+
+
 ---
- Key Learnings from Week 2
+
+ Key Learnings 
 - A System-on-Chip integrates **CPU, memory, peripherals, and interconnect** on a single chip to provide a complete computing system.  
 - BabySoC acts as a **learning platform** that simplifies SoC design for beginners.  
 - **Functional modelling** is the first checkpoint in SoC design flow, ensuring that the basic system works correctly before RTL and physical design.  
