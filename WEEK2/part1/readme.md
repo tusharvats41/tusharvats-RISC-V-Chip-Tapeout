@@ -14,6 +14,7 @@ This integration brings several advantages:
 - **Reliability** – Fewer inter-chip connections mean fewer failure points.
 
 Modern devices like smartphones, wearables, IoT nodes, and even high-performance processors rely heavily on SoC designs.
+![SoC Diagram](photos/M1IOS6-10a74205c8d8.jpg)
 
 
 Components of a Typical SoC
