@@ -39,6 +39,7 @@ Components of a Typical SoC
    - The backbone that connects CPU, memory, and peripherals.  
    - Ensures smooth communication between components.  
    - Examples in real-world SoCs include **AMBA buses** like AXI, AHB, and APB.
+![SoC Diagram](photos/socdesignflow)
 
 ---
  Why BabySoC?
