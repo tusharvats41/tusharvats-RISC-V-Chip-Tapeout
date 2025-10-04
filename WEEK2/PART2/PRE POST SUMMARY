@@ -1,1 +1,91 @@
+WEEK2 PART 2 vsd BABYSoC
+## 1. Pre-Synthesis RTL
+
+Pre-Synthesis RTL refers to the code that you write before synthesis, usually in the form of Verilog or VHDL. At this point, the code is still abstract and does not consider the specific hardware constraints (timing, area, power, etc.). The goal at this stage is to design your logic at a high level, independent of the actual physical realization.
+
+Key Concepts:
+- **HDL code** is written in Verilog or VHDL.
+- The code is abstract and hardware-independent.
+- No specific timing constraints applied.
+
+## 2. Pre-Synthesis Simulation
+
+Before synthesizing your RTL design, **Pre-Synthesis Simulation** is used to verify the functionality of your design. This simulation is typically done using tools like ModelSim, VCS, or XSIM.
+
+### Running Pre-Synthesis Simulation:
+
+* You will simulate your RTL code to verify correctness.
+* No hardware-specific constraints are considered.
+* The simulation will help you ensure that the logic performs as expected for various test cases.
+
+Steps to simulate in a typical flow:
+
+```bash
+# Compile your design
+vlog counter.v
+
+# Create a testbench for your module
+vlog counter_tb.v
+
+# Run the simulation
+vsim counter_tb
+```
+
+Pre-synthesis simulation is useful for detecting logical errors in your design before moving to the synthesis stage.
+
+---
+
+## 3. Post-Synthesis RTL
+
+After synthesis, **Post-Synthesis RTL** is the optimized version of your design. Synthesis tools like Synopsys Design Compiler or Xilinx Vivado convert the high-level RTL code into a netlist. This netlist contains logic gates, flip-flops, and other elements that are more closely tied to hardware. At this point, the design is mapped onto the available resources on the target platform (FPGA, ASIC).
+
+Key Concepts:
+
+* RTL code after synthesis.
+* Logic mapped to gates and flip-flops.
+* Physical constraints (timing, area, power) applied.
+
+
+## 4. Post-Synthesis Simulation
+
+**Post-Synthesis Simulation** simulates the netlist after synthesis. It is crucial to verify if the design still functions as expected after the synthesis process, as optimizations made by the synthesis tool may affect functionality (e.g., timing violations, logic changes). This simulation is done with the synthesized netlist, ensuring the synthesized design meets your functional requirements.
+
+### Running Post-Synthesis Simulation:
+
+After synthesis, you will have a netlist file (e.g., `.v` or `.edf` file). You would use a simulation tool to run this netlist.
+
+```bash
+# Compile the synthesized netlist
+vlog synthesized_counter.v
+
+# Run simulation on the synthesized design
+vsim synthesized_counter_tb
+```
+
+Post-Synthesis simulation allows you to verify that your design still behaves correctly in the hardware-specific form after optimization.
+
+---
+
+## How to Run Pre and Post-Synthesis Simulations
+
+1. **Pre-Synthesis Simulation**:
+
+   * Use an RTL simulator to simulate the original Verilog/VHDL code.
+   * Ensure there are no logic errors in your design.
+
+2. **Post-Synthesis Simulation**:
+
+   * After synthesizing the RTL to a netlist, simulate the synthesized design.
+   * Verify that optimizations haven’t introduced new issues like timing errors or functional issues.
+
+---
+
+## Conclusion
+
+* **Pre-Synthesis RTL** is the high-level representation of your design, written in Verilog or VHDL, and is typically simulated to ensure functionality.
+* **Post-Synthesis RTL** is the optimized design after synthesis, and is the actual implementation you will use for physical hardware.
+* **Pre-Synthesis Simulation** verifies the logical correctness of the code, and **Post-Synthesis Simulation** ensures the synthesized design functions correctly in hardware.
+
+By understanding the differences and using simulations at both stages, you can ensure that your design will work efficiently in the final hardware.
+
 
