@@ -57,7 +57,7 @@ make pre_synth_sim
 gtkwave output/pre_synth_sim/pre_synth_sim.vcd
 ```
  Reset Operation
-![Reset waveform](photos/waveform.png)
+![Reset waveform](photos/PREWAVEFORM.png)
 
 This screenshot shows the BabySoC reset waveform. The CPU registers are initialized and clock starts running after reset.
 
