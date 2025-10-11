@@ -49,4 +49,4 @@ Performing GLS gives confidence that:
 * The synthesized BabySoC is functionally accurate.
 * The design can be safely taken to the **place-and-route** stage.
 * Timing and logic integrity are verified before physical realization.
-![GLS Waveform](synthesislog/glswaveform)
+![GLS Waveform](photo/glswaveform)
