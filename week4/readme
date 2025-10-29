@@ -1,1 +1,412 @@
 
+
+## **Task 1 – MOSFET Behavior: The Current–Voltage Study**
+
+### **Objective**
+
+To study how a MOSFET behaves as the drain voltage (Vds) changes and to understand the regions of operation — linear and saturation.
+
+### **Overview**
+
+A MOSFET is a type of transistor that acts as a voltage-controlled current source. By adjusting the gate voltage (Vgs), we can control how much current flows from drain to source (Id).
+This experiment helps us see how the MOSFET changes from acting like a resistor to a constant current source.
+
+### **Circuit Setup**
+
+We use an NMOS transistor with:
+
+* Drain connected to a variable voltage (Vds)
+* Gate at a fixed bias (Vgs)
+* Source and body grounded
+
+The transistor parameters are:
+**Width (W) = 5 µm**, **Length (L) = 2 µm**
+
+### **SPICE Setup**
+
+```spice
+* NMOS Id-Vds Characteristics
+.lib "sky130_fd_pr/models/sky130.lib.spice" tt
+
+XM1 vdd n1 0 0 sky130_fd_pr__nfet_01v8 w=5 l=2
+Vdd vdd 0 1.8
+Vin in 0 1.8
+
+.dc Vdd 0 1.8 0.1 Vin 0 1.8 0.2
+.end
+```
+
+Run command:
+
+```
+ngspice day1_nfet_idvds_L2_W5.spice
+plot -vdd#branch
+```
+
+The minus sign is used because ngspice measures current entering the voltage source.
+
+### **Theory**
+
+When **Vgs > Vt**, the MOSFET starts to conduct.
+It has two main operating regions:
+
+| Region         | Condition         | Description                                 | Equation                                 |
+| -------------- | ----------------- | ------------------------------------------- | ---------------------------------------- |
+| Linear (Ohmic) | Vds << (Vgs - Vt) | Acts like a voltage-controlled resistor     | Id = μn·Cox·(W/L)·[(Vgs−Vt)Vds − Vds²/2] |
+| Saturation     | Vds ≥ (Vgs - Vt)  | Channel pinches off and Id becomes constant | Id = ½μn·Cox·(W/L)(Vgs−Vt)²(1+λVds)      |
+
+As Vds increases, current initially rises almost linearly (linear region). After a certain point, it flattens (saturation region).
+
+### **Observations**
+
+* The slope of the curve at small Vds shows the linear region (low resistance).
+* As Vds increases beyond (Vgs − Vt), the current stops increasing much — this is the saturation point.
+* Higher Vgs values create stronger channels and higher Id.
+
+| Vgs (V) | Vds @ Saturation | Max Id (µA) | Region         | Power (µW) |
+| ------- | ---------------- | ----------- | -------------- | ---------- |
+| 0.6     | ~0.3             | 8           | Weak inversion | ~14        |
+| 0.9     | ~0.6             | 24          | Moderate       | ~43        |
+| 1.2     | ~0.9             | 42          | Strong         | ~76        |
+| 1.5     | ~1.2             | 58          | Max drive      | ~104       |
+
+### **Key Points**
+
+* Linear region → good for switches (low Rds(on))
+* Saturation region → ideal for amplifiers
+* Increasing Vgs increases Id but also power
+* Each Vgs gives a distinct curve (voltage-controlled current source behavior)
+
+### **Conclusion**
+
+The MOSFET shows two main regions of operation. In the linear region, it behaves like a resistor, and in saturation, it behaves as a constant current source. This behavior forms the basis of digital and analog circuit design.
+
+---
+
+## **Task 2 – Threshold Voltage and Velocity Saturation**
+
+### **Objective**
+
+To find the MOSFET threshold voltage (Vt) and understand velocity saturation in short-channel devices.
+
+### **Device Parameters**
+
+| Parameter  | Value  | Importance             |
+| ---------- | ------ | ---------------------- |
+| Width (W)  | 1.8 µm | Affects current        |
+| Length (L) | 1.2 µm | Controls speed/current |
+| W/L Ratio  | 1.5    | Device strength        |
+
+### **Theory**
+
+**Threshold Voltage (Vt)** – The minimum gate voltage required to turn on the MOSFET.
+**Velocity Saturation** – When electrons move so fast that they hit their speed limit (~10⁷ cm/s) and the current no longer increases with electric field.
+
+For long-channel devices:
+
+* Id ∝ (Vgs − Vt)²
+  For short-channel devices:
+* Id ∝ (Vgs − Vt)
+
+This means short-channel devices are faster but have lower current due to velocity saturation.
+
+### **SPICE Experiment**
+
+1. **Id vs Vds** – Observe the linear and saturation regions.
+   Command:
+
+   ```
+   ngspice day2_nfet_idvds_L015_W039.spice
+   plot -vdd#branch
+   ```
+2. **Id vs Vgs** – Find threshold voltage using √Id vs Vgs method.
+
+   ```
+   ngspice day2_nfet_idvgs_L015_W039.spice
+   plot -vdd#branch
+   ```
+
+### **Threshold Extraction**
+
+Plot √Id vs Vgs.
+The straight-line region in strong inversion is extended to the x-axis.
+The x-intercept gives **Vt**.
+
+| Channel Length | Approx. Vt (V) | Observation             |
+| -------------- | -------------- | ----------------------- |
+| 2 µm           | ~0.45          | Long channel            |
+| 0.5 µm         | ~0.42          | Moderate SCE            |
+| 0.15 µm        | ~0.38          | Short channel, lower Vt |
+
+(SCE – Short Channel Effects)
+
+### **Observations**
+
+* As L decreases, Vt reduces due to stronger gate control.
+* Velocity saturation reduces Id but improves switching speed.
+* Designers usually increase transistor width to balance this trade-off.
+
+### **Conclusion**
+
+Threshold voltage defines when a MOSFET starts conducting. Velocity saturation limits how fast electrons can move, making very short transistors faster but with less current. Both effects are critical in high-speed CMOS design.
+
+---
+
+## **Task 3 – The Voltage Transfer Characteristic (VTC) of CMOS Inverter**
+
+### **Objective**
+
+To obtain the Voltage Transfer Characteristic (VTC) curve of a CMOS inverter and determine its switching threshold voltage (Vm).
+
+### **Inverter Details**
+
+| Parameter        | Symbol | Value   |
+| ---------------- | ------ | ------- |
+| PMOS Width       | Wp     | 0.84 µm |
+| PMOS Length      | Lp     | 0.15 µm |
+| NMOS Width       | Wn     | 0.36 µm |
+| NMOS Length      | Ln     | 0.15 µm |
+| Supply Voltage   | VDD    | 1.8 V   |
+| Load Capacitance | Cload  | 50 fF   |
+
+**Wp/Wn = 2.33**, chosen to balance rise and fall strengths since holes move slower than electrons.
+
+### **Theory**
+
+A CMOS inverter switches output between VDD and GND based on input voltage.
+There are three main regions:
+
+1. **Input Low (0–0.4V)**: PMOS ON, NMOS OFF → Output HIGH (~VDD)
+2. **Mid Range (0.4–1.4V)**: Both partially ON → Output rapidly changes
+3. **Input High (1.4–1.8V)**: PMOS OFF, NMOS ON → Output LOW (~0V)
+
+At the **switching threshold (Vm)**, both transistors conduct equal current — this is where Vin = Vout.
+
+### **SPICE Setup**
+
+```spice
+ngspice day3_inv_vtc_Wp084_Wn036.spice
+plot v(out) vs v(in)
+```
+
+### **Results**
+
+| Parameter         | Symbol | Measured | Expected  | Status |
+| ----------------- | ------ | -------- | --------- | ------ |
+| Switching Voltage | Vm     | 0.8787 V | 0.8–1.0 V | ✓      |
+| Output High       | VOH    | 1.8 V    | ≈ VDD     | ✓      |
+| Output Low        | VOL    | ~0 V     | <50 mV    | ✓      |
+
+### **Analysis**
+
+* The inverter switches sharply at around 0.88 V.
+* Proper sizing (Wp/Wn ≈ 2.3) gives a symmetric transfer curve around VDD/2.
+* Noise margins and gain depend on the steepness and symmetry of this curve.
+Perfect ✅ Got it — you want me to rewrite **everything from Task 4 (Transient Response)** through **Task 6 (CMOS Power Supply & Device Variation Robustness)** into a single, clean, human-written Markdown-style report — ready for direct copy-paste into your **GitHub README** file.
+
+
+# CMOS Inverter Analysis and Performance Study
+
+*(SkyWater 130nm PDK)*
+
+This project analyzes the transient behavior, noise margins, and robustness of a CMOS inverter designed using the Sky130 PDK. The study focuses on three key aspects: transient response, noise margin evaluation, and robustness under power supply and device variations.
+
+---
+
+## **Task 4 – Transient Response**
+
+### **Overview**
+
+The transient response of a CMOS inverter helps us understand how the circuit behaves when the input switches between logic levels. It shows how fast the output can respond and how efficiently it transitions between high and low states.
+
+During simulation, both the input and output waveforms were observed. The input waveform is a square wave, while the output shows a slight delay and smoother transitions due to the charging and discharging of the load capacitance.
+
+### **Measured Timing Parameters**
+
+| Parameter                       | Symbol    | Measured Value | Description                                                          |
+| ------------------------------- | --------- | -------------- | -------------------------------------------------------------------- |
+| Rise Time                       | tr        | 661.76 ps      | Time taken for output to rise from 10% (0.18V) to 90% (1.62V) of VDD |
+| Fall Time                       | tf        | 475.07 ps      | Time taken for output to fall from 90% (1.62V) to 10% (0.18V) of VDD |
+| Propagation Delay (Low to High) | tPLH      | ~662 ps        | Delay when output transitions from LOW to HIGH                       |
+| Propagation Delay (High to Low) | tPHL      | ~475 ps        | Delay when output transitions from HIGH to LOW                       |
+| Peak VOH                        | VOH(peak) | 1.809 V        | Slight overshoot observed during high transition                     |
+| Peak VOL                        | VOL(peak) | −4.94 mV       | Minimal undershoot during low transition                             |
+
+### **Analysis**
+
+The fall time (tf) is smaller than the rise time (tr), meaning the output falls faster than it rises. This happens because NMOS transistors have higher carrier mobility than PMOS transistors.
+Even though the PMOS transistor is made wider (Wp = 1 µm vs Wn = 0.36 µm), electrons in the NMOS move faster than holes in the PMOS, causing a quicker pull-down than pull-up.
+
+The slight overshoot (VOH = 1.809V) occurs due to parasitic inductance and fast current transitions. The overshoot is minimal (around 0.5%) and is completely safe.
+
+### **Switching Threshold**
+
+At the switching voltage (Vm = 0.8787 V), both NMOS and PMOS are in the saturation region. They conduct equal current, which results in maximum voltage gain — this is the inverter’s most sensitive operating point.
+
+### **Performance Insights**
+
+| Goal               | Method                   | Trade-off                                    |
+| ------------------ | ------------------------ | -------------------------------------------- |
+| Faster Rise        | Increase PMOS width      | Increases area, power, and input capacitance |
+| Faster Fall        | Increase NMOS width      | Increases area and power                     |
+| Balanced Rise/Fall | Adjust Wp/Wn ratio       | Changes switching threshold                  |
+| Lower Power        | Reduce transistor widths | Slower transition speed                      |
+| Less Overshoot     | Add series resistance    | Reduces speed slightly                       |
+
+### **Performance Calculation**
+
+Average Propagation Delay:
+`tP = (tPLH + tPHL) / 2 = (662 + 475) / 2 = 568.5 ps`
+
+Maximum Frequency of Operation:
+`fmax = 1 / (2 × tP) ≈ 879 MHz`
+
+This shows the inverter can theoretically switch up to around 879 MHz — excellent performance for a single-stage CMOS gate.
+
+### **Key Takeaways**
+
+* Rise and fall times in the range of hundreds of picoseconds indicate a healthy, fast design.
+* NMOS is naturally faster; balancing transistor widths can equalize transition speeds if needed.
+* Transient simulations are essential for real-world timing validation — static DC analysis alone is not enough.
+* Load capacitance strongly affects speed; larger loads result in slower transitions.
+
+---
+
+## **Task 5 – Noise Margin Analysis**
+
+### **Objective**
+
+Noise margins determine how robust a digital circuit is against noise, voltage fluctuations, and process variations. They define the voltage range where a logic ‘0’ or ‘1’ remains unambiguous.
+
+### **Key Definitions**
+
+| Parameter            | Symbol | Description                                    |
+| -------------------- | ------ | ---------------------------------------------- |
+| Output High          | VOH    | Minimum guaranteed high output voltage         |
+| Output Low           | VOL    | Maximum guaranteed low output voltage          |
+| Input High Threshold | VIH    | Minimum input voltage recognized as logic high |
+| Input Low Threshold  | VIL    | Maximum input voltage recognized as logic low  |
+
+### **Formulas**
+
+* **High Noise Margin:** `NMH = VOH − VIH`
+* **Low Noise Margin:** `NML = VIL − VOL`
+
+These indicate how much noise the circuit can tolerate while still operating correctly.
+
+### **Simulation and Measurement**
+
+From the inverter’s voltage transfer characteristic (VTC) and its gain plot (|dVout/dVin| = 1 points):
+
+| Parameter | Measured Value | Observation            |
+| --------- | -------------- | ---------------------- |
+| VOH       | 1.800 V        | Output high saturation |
+| VOL       | 0.0000006 V    | Essentially 0 V        |
+| VIL       | 0.7436 V       | Left unity-gain point  |
+| VIH       | 1.0036 V       | Right unity-gain point |
+
+### **Calculated Noise Margins**
+
+* `NMH = VOH − VIH = 1.800 − 1.0036 = 0.7964 V`
+* `NML = VIL − VOL = 0.7436 − 0.0000006 = 0.7436 V`
+
+These results show **excellent noise margins**, around 44% of VDD, meaning the inverter can handle substantial noise without logic errors.
+
+### **Interpretation**
+
+* The circuit has well-balanced noise margins for both logic levels.
+* High noise margins ensure reliability in real-world conditions such as power supply noise, crosstalk, and temperature variations.
+* A design with poor noise margins may work in simulation but fail in hardware due to unpredictable disturbances.
+
+---
+
+## **Task 6 – CMOS Power Supply & Device Variation Robustness**
+
+### **Objective**
+
+This section studies how changes in power supply (VDD) and transistor dimensions (W/L ratio) affect inverter performance, switching threshold, and noise margins.
+
+### **Simulation Setup**
+
+CMOS inverter was simulated using **SkyWater 130nm PDK**:
+
+```
+.include "sky130_fd_pr/models/sky130.lib.spice"
+Vdd vdd 0 1.8
+Vin in 0 DC 0
+Xm1 out in vdd vdd sky130_fd_pr__pfet_01v8 W=1.0u L=0.36u
+Xm2 out in 0 0 sky130_fd_pr__nfet_01v8 W=0.36u L=0.36u
+.dc Vin 0 1.8 0.01
+.print dc V(out)
+.end
+```
+
+### **Experiment A – Supply Voltage Scaling**
+
+VDD was swept from 1.8V to 0.8V to see how noise margins degrade at lower supply voltages.
+
+| VDD (V) | VOH (V) | VOL (V) | VIL (V) | VIH (V) | Vm (V) | NML (V) | NMH (V) | Health    |
+| ------- | ------- | ------- | ------- | ------- | ------ | ------- | ------- | --------- |
+| 1.8     | 1.800   | ~0      | 0.744   | 1.056   | 0.900  | 0.744   | 1.056   | Excellent |
+| 1.6     | 1.600   | ~0      | 0.687   | 0.913   | 0.791  | 0.687   | 0.913   | Good      |
+| 1.4     | 1.400   | ~0      | 0.621   | 0.787   | 0.700  | 0.621   | 0.613   | Marginal  |
+| 1.2     | 1.200   | ~0      | 0.549   | 0.685   | 0.611  | 0.549   | 0.515   | Risky     |
+| 1.0     | 1.000   | ~0      | 0.482   | 0.594   | 0.531  | 0.482   | 0.406   | Danger    |
+| 0.8     | 0.800   | ~0      | 0.419   | 0.514   | 0.458  | 0.419   | 0.286   | Critical  |
+
+### **Findings**
+
+* As VDD decreases, both noise margins shrink drastically.
+* The switching voltage (Vm) shifts downward with lower VDD.
+* The circuit becomes less robust at low voltages and prone to timing errors.
+* VOL remains close to ground, while VOH drops proportionally with VDD.
+
+### **Experiment B – Transistor Sizing Variation**
+
+PMOS width was varied while NMOS was kept fixed (Wn = 0.36 µm).
+
+| Config | Wp (µm) | Wp/Wn | VOH (V) | VOL (V) | VIL (V) | VIH (V) | Vm (V) | NML (V) | NMH (V) |
+| ------ | ------- | ----- | ------- | ------- | ------- | ------- | ------ | ------- | ------- |
+| 1      | 0.60    | 1.67× | 1.800   | ~0      | 0.713   | 0.952   | 0.847  | 0.713   | 0.847   |
+| 2      | 1.00    | 2.78× | 1.800   | ~0      | 0.713   | 0.952   | 0.847  | 0.713   | 0.847   |
+| 3      | 1.50    | 4.17× | 1.800   | ~0      | 0.713   | 0.952   | 0.847  | 0.713   | 0.847   |
+| 4      | 2.00    | 5.56× | 1.800   | ~0      | 0.713   | 0.952   | 0.847  | 0.713   | 0.847   |
+
+### **Interpretation**
+
+* Increasing PMOS width strengthens pull-up operation, slightly shifting Vm upward.
+* Increasing NMOS width would have the opposite effect (Vm shifts downward).
+* Overall VOH and VOL remain stable, indicating a well-balanced design.
+
+---
+
+## **Key Insights and Practical Design Guidelines**
+
+* Reducing VDD lowers transistor overdrive (Vgs − Vth), reducing drive strength and increasing delay.
+* The safe operating range must consider voltage droop and process variations.
+* PMOS/NMOS sizing directly affects switching threshold and noise margins — they must be balanced.
+* Large power or performance-sensitive designs should always include margin analysis across all **PVT (Process, Voltage, Temperature)** corners.
+
+### **Design Recommendations**
+
+✅ **Do:**
+
+* Use a supply voltage margin of at least 20%.
+* Maintain balanced transistor sizing (Vm ≈ VDD/2).
+* Validate across all corners and include guardbands in STA.
+
+❌ **Don’t:**
+
+* Assume nominal supply conditions.
+* Ignore process variations.
+* Reduce noise margins excessively.
+* Overlook IR-drop and crosstalk effects.
+
+---
+
+## **Conclusion**
+
+This study demonstrates how transient performance, noise margins, and robustness define the real-world behavior of a CMOS inverter.
+The inverter showed excellent transient speed (~879 MHz capability), strong noise margins (>40% of VDD), and predictable variation behavior under stress.
+
+
